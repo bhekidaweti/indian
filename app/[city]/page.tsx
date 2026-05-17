@@ -86,7 +86,7 @@ export default async function CityPage({ params }: CityPageProps) {
       {/* Back Button */}
       <Link 
         href="/restaurants" 
-        className="inline-flex items-center gap-2 text-gray-600 hover:text-blue-600 mb-6 transition-colors"
+        className="inline-flex items-center gap-2 text-gray-600 hover:text-orange-600 mb-6 transition-colors"
       >
         <ArrowLeft className="w-4 h-4" />
         Back to all restaurants
