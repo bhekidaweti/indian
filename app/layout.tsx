@@ -74,7 +74,6 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={inter.className}>
         <head>
            <Script
           src="https://www.googletagmanager.com/gtag/js?id=G-GC0NLD0Z6H"
@@ -101,6 +100,7 @@ export default function RootLayout({
               }}
         />
         </head>
+        <body className={inter.className}>
         <AuthProvider>
           <Navbar />
           <main className="min-h-screen bg-gray-50">

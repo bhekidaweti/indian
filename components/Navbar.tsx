@@ -39,8 +39,11 @@ export default function Navbar() {
             <Link
               href="/"
               className="text-xl font-bold text-gray-900 hover:text-orange-500 transition-colors"
-            >
-              Indian<span className="text-orange-500">Restaurants</span>
+            > 
+            <img src="/logo-ind.png" 
+                  alt="Logo" 
+                  className="w-20 h-20 mr-2" />
+              {/*Indian<span className="text-orange-500">Restaurants</span> */}
             </Link>
           </div>
 
