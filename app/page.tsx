@@ -4,8 +4,8 @@ import { useState, useEffect, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import RestaurantCard from '@/components/RestaurantCard';
 import { Restaurant, FilterOptions } from '@/types/restaurants';
-import { Search, MapPin, Utensils, Star, Filter, X } from 'lucide-react';
-import Link from 'next/link';
+import { Search, MapPin, Utensils, Filter, X } from 'lucide-react';
+
 
 export default function HomePage() {
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
@@ -13,6 +13,7 @@ export default function HomePage() {
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState<FilterOptions>({});
   const [searchInput, setSearchInput] = useState('');
+  const [provinces, setProvinces] = useState<string[]>([]);
   const [cities, setCities] = useState<string[]>([]);
   const [keywords, setKeywords] = useState<string[]>([]);
   const [hasSearched, setHasSearched] = useState(false);
@@ -22,13 +23,17 @@ export default function HomePage() {
   // Fetch filter options on mount
   useEffect(() => {
     const fetchFilterOptions = async () => {
-      const [citiesResult, keywordsResult] = await Promise.all([
+      const [citiesResult, provincesResult, keywordsResult] = await Promise.all([
         supabase.from('restaurants').select('city').not('city', 'is', null).neq('city', ''),
+        supabase.from('restaurants').select('province').not('province', 'is', null).neq('province', ''),
         supabase.from('restaurants').select('keyword').not('keyword', 'is', null).neq('keyword', '')
       ]);
 
       if (citiesResult.data) {
         setCities([...new Set(citiesResult.data.map(c => c.city).filter(Boolean))]);
+      }
+      if (provincesResult.data) {
+        setProvinces([...new Set(provincesResult.data.map(p => p.province).filter(Boolean))]);
       }
       if (keywordsResult.data) {
         setKeywords([...new Set(keywordsResult.data.map(k => k.keyword).filter(Boolean))]);
@@ -38,7 +43,7 @@ export default function HomePage() {
   }, [supabase]);
 
   const handleSearch = async (e?: React.FormEvent) => {
-    e?.preventDefault();
+    if (e) e.preventDefault();
     setLoading(true);
     setHasSearched(true);
 
@@ -52,6 +57,9 @@ export default function HomePage() {
       }
 
       // Apply filters
+      if (filters.province && filters.province !== '') {
+        query = query.eq('province', filters.province);
+      }
       if (filters.city && filters.city !== '') {
         query = query.eq('city', filters.city);
       }
@@ -64,7 +72,7 @@ export default function HomePage() {
 
       const { data, error } = await query
         .order('rating', { ascending: false })
-        .limit(20);
+        .limit(50);
 
       if (error) throw error;
       setRestaurants(data || []);
@@ -75,16 +83,23 @@ export default function HomePage() {
     }
   };
 
+  // Fixed: Properly handle quick searches with filters and trigger search
   const handleQuickSearch = (city: string) => {
-    setFilters({ city });
     setSearchInput('');
-    setTimeout(() => handleSearch(), 100);
+    setFilters({ city });
+    // Use setTimeout to ensure state updates before search
+    setTimeout(() => {
+      handleSearch();
+    }, 0);
   };
 
+  // Fixed: Properly handle cuisine searches
   const handleCuisineSearch = (keyword: string) => {
-    setFilters({ keyword });
     setSearchInput('');
-    setTimeout(() => handleSearch(), 100);
+    setFilters({ keyword });
+    setTimeout(() => {
+      handleSearch();
+    }, 0);
   };
 
   const clearAllFilters = () => {
@@ -98,7 +113,9 @@ export default function HomePage() {
     const newFilters = { ...filters };
     delete newFilters[key];
     setFilters(newFilters);
-    setTimeout(() => handleSearch(), 100);
+    setTimeout(() => {
+      handleSearch();
+    }, 0);
   };
 
   return (
@@ -192,10 +209,27 @@ export default function HomePage() {
         {/* Advanced Filters Panel */}
         {showFilters && (
           <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <select
                 className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
-                onChange={(e) => setFilters({ ...filters, city: e.target.value })}
+                onChange={(e) => {
+                  setFilters({ ...filters, province: e.target.value });
+                  setTimeout(() => handleSearch(), 0);
+                }}
+                value={filters.province || ''}
+              >
+                <option value="">All Provinces</option>
+                {provinces.map(province => (
+                  <option key={province} value={province}>{province}</option>
+                ))}
+              </select>
+
+              <select
+                className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+                onChange={(e) => {
+                  setFilters({ ...filters, city: e.target.value });
+                  setTimeout(() => handleSearch(), 0);
+                }}
                 value={filters.city || ''}
               >
                 <option value="">All Cities</option>
@@ -206,7 +240,10 @@ export default function HomePage() {
 
               <select
                 className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
-                onChange={(e) => setFilters({ ...filters, keyword: e.target.value })}
+                onChange={(e) => {
+                  setFilters({ ...filters, keyword: e.target.value });
+                  setTimeout(() => handleSearch(), 0);
+                }}
                 value={filters.keyword || ''}
               >
                 <option value="">All Cuisines</option>
@@ -217,7 +254,15 @@ export default function HomePage() {
 
               <select
                 className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
-                onChange={(e) => setFilters({ ...filters, minRating: parseFloat(e.target.value) })}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  let ratingValue: number | undefined;
+                  if (value === '4.5') ratingValue = 4.5;
+                  else if (value === '4.0') ratingValue = 4.0;
+                  else if (value === '3.5') ratingValue = 3.5;
+                  setFilters({ ...filters, minRating: ratingValue });
+                  setTimeout(() => handleSearch(), 0);
+                }}
                 value={filters.minRating || ''}
               >
                 <option value="">Any Rating</option>
@@ -232,7 +277,7 @@ export default function HomePage() {
                 onClick={() => {
                   setFilters({});
                   setSearchInput('');
-                  setTimeout(() => handleSearch(), 100);
+                  handleSearch();
                 }}
                 className="text-sm text-gray-500 hover:text-red-600"
               >
@@ -243,13 +288,21 @@ export default function HomePage() {
         )}
 
         {/* Active Filters Display */}
-        {(filters.city || filters.keyword || filters.minRating || searchInput) && (
+        {(filters.province || filters.city || filters.keyword || filters.minRating || searchInput) && (
           <div className="flex flex-wrap gap-2 mb-6 items-center">
             <span className="text-sm text-gray-600">Active filters:</span>
             {searchInput && (
               <span className="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
                 Search: {searchInput}
                 <button onClick={() => { setSearchInput(''); handleSearch(); }} className="hover:text-blue-600">
+                  <X className="w-3 h-3" />
+                </button>
+              </span>
+            )}
+            {filters.province && (
+              <span className="inline-flex items-center gap-1 px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm">
+                Province: {filters.province}
+                <button onClick={() => removeFilter('province')} className="hover:text-yellow-600">
                   <X className="w-3 h-3" />
                 </button>
               </span>
