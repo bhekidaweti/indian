@@ -58,7 +58,7 @@ export default async function CityPage({ params }: CityPageProps) {
     .from('restaurants')
     .select('*')
     .ilike('city', `%${cityDisplayName}%`)
-    .order('rating', { ascending: false, nullsLast: true });
+    .order('rating', { ascending: false});
 
   if (error) {
     console.error('Error fetching city restaurants:', error);

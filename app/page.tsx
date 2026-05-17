@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import RestaurantCard from '@/components/RestaurantCard';
-import { Restaurant, FilterOptions } from '@/types/restaurant';
+import { Restaurant, FilterOptions } from '@/types/restaurants';
 import { Search, MapPin, Utensils, Star, Filter, X } from 'lucide-react';
 import Link from 'next/link';
 

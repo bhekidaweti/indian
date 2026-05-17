@@ -4,7 +4,7 @@ import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import RestaurantCard from '@/components/RestaurantCard';
-import { Restaurant } from '@/types/restaurant';
+import { Restaurant } from '@/types/restaurants';
 import { Search, Filter, X } from 'lucide-react';
 import Link from 'next/link';
 
@@ -35,7 +35,7 @@ function SearchContent() {
           query = query.ilike('city', `%${city}%`);
         }
 
-        const { data, error: fetchError } = await query.order('rating', { ascending: false, nullsLast: true });
+        const { data, error: fetchError } = await query.order('rating', { ascending: false });
 
         if (fetchError) throw fetchError;
         setRestaurants(data || []);

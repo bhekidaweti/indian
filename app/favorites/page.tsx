@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { createClient } from '@/lib/supabase/client';
-import { Restaurant } from '@/types/restaurant';
+import { Restaurant } from '@/types/restaurants';
 import RestaurantCard from '@/components/RestaurantCard';
 import { Heart, AlertCircle, Trash2 } from 'lucide-react';
 import Link from 'next/link';
@@ -55,7 +55,7 @@ export default function FavoritesPage() {
         .from('restaurants')
         .select('*')
         .in('id', restaurantIds)
-        .order('rating', { ascending: false, nullsLast: true });
+        .order('rating', { ascending: false });
 
       if (restError) throw restError;
 

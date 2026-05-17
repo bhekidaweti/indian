@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { createClient } from '@/lib/supabase/client';
-import { Review, Restaurant } from '@/types/restaurant';
+import { Review, Restaurant } from '@/types/restaurants';
 import { Star, Trash2, Edit, AlertCircle, Loader2, Building2 } from 'lucide-react';
 import Link from 'next/link';
 
