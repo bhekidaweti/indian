@@ -34,7 +34,7 @@ export default function Footer() {
           {/* Brand */}
           <div>
             <Link href="/" className="text-2xl font-bold text-white">
-              Indian<span className="text-orange-700">Restaurants</span>
+              Indian<span className="text-orange-700">RestaurantNearMe</span>
             </Link>
             <p className="mt-4 text-sm leading-7 text-gray-950">
               Discover authentic Indian restaurants, takeaways, curry houses, 
@@ -99,7 +99,7 @@ export default function Footer() {
                   href="mailto:info@indianrestaurants.co.za"
                   className="hover:text-orange-900 transition-colors"
                 >
-                  info@indianrestaurants.co.za
+                  info@indianrestaurantnearme.co.za
                 </a>
               </li>
             </ul>
@@ -109,6 +109,11 @@ export default function Footer() {
 
       {/* Bottom */}
       <div className="border-t border-orange-800">
+          <p className="text-xxl text-orange-900">
+          Restaurant ratings displayed are sourced from Google Maps where no platform 
+          reviews exist yet. Ratings will transition to user-submitted reviews as our 
+          community grows.
+        </p>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-gray-950">
           <p>© {currentYear} IndianRestaurantNearMe.co.za. All rights reserved.</p>
           <div className="flex items-center gap-6">

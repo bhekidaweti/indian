@@ -104,6 +104,7 @@ const transformedReviews = reviews?.map(review => ({
         restaurant={restaurant} 
         isFavorited={isFavorited}
         userId={user?.id}
+        userReviews={transformedReviews} 
       />
       
       <RestaurantReviews 

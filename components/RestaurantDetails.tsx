@@ -17,16 +17,23 @@ import {
 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 
+
 interface RestaurantDetailsProps {
   restaurant: Restaurant;
   isFavorited: boolean;
   userId?: string;
+  userReviews: any[];
 }
 
-export default function RestaurantDetails({ restaurant, isFavorited: initialFavorited, userId }: RestaurantDetailsProps) {
+export default function RestaurantDetails({ restaurant, isFavorited: initialFavorited, userId, userReviews }: RestaurantDetailsProps) {
   const [isFavorited, setIsFavorited] = useState(initialFavorited);
   const [copied, setCopied] = useState(false);
   const supabase = createClient();
+  
+  const userReviewCount = userReviews.length;
+  const userAverageRating = userReviewCount > 0
+    ? userReviews.reduce((acc, r) => acc + (r.rating || 0), 0) / userReviewCount
+    : null;
 
   const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${restaurant.latitude},${restaurant.longitude}`;
   
@@ -84,8 +91,12 @@ export default function RestaurantDetails({ restaurant, isFavorited: initialFavo
           />
         ))}
         <span className="ml-2 text-2xl font-bold text-gray-900">{rating}</span>
-        <span className="ml-1 text-gray-500">({restaurant.review_count} reviews)</span>
+       <span className="ml-1 text-gray-500">
+          ({userReviewCount > 0 ? userReviewCount : restaurant.review_count} reviews)
+        </span>
+        <span className="ml-2 text-xs text-gray-400 italic">via Google Maps</span>
       </div>
+      
     );
   };
 
@@ -248,30 +259,35 @@ export default function RestaurantDetails({ restaurant, isFavorited: initialFavo
 
         {/* Schema.org markup for SEO */}
         <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              "@context": "https://schema.org",
-              "@type": "Restaurant",
-              "name": restaurant.name,
-              "address": {
-                "@type": "PostalAddress",
-                "streetAddress": restaurant.address,
-                "addressLocality": restaurant.city,
-                "addressRegion": restaurant.province,
-              },
-              "telephone": restaurant.phone,
-              "url": restaurant.website,
-              "aggregateRating": {
-                "@type": "AggregateRating",
-                "ratingValue": restaurant.rating,
-                "reviewCount": restaurant.review_count,
-              },
-              "servesCuisine": restaurant.keyword,
-              "priceRange": restaurant.price_range,
-            }),
-          }}
-        />
+  type="application/ld+json"
+  dangerouslySetInnerHTML={{
+    __html: JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "Restaurant",
+      "name": restaurant.name,
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": restaurant.address || undefined,
+        "addressLocality": restaurant.city,
+        "addressRegion": restaurant.province,
+      },
+      ...(restaurant.phone && { "telephone": restaurant.phone }),
+      ...(restaurant.website && { "url": restaurant.website }),
+      ...(restaurant.keyword && { "servesCuisine": restaurant.keyword }),
+      ...(restaurant.price_range && { "priceRange": restaurant.price_range }),
+      // Only use YOUR users' reviews — never Google Maps data
+      ...(userAverageRating && userReviewCount
+        ? {
+            "aggregateRating": {
+              "@type": "AggregateRating",
+              "ratingValue": Number(userAverageRating.toFixed(1)),
+              "reviewCount": userReviewCount,
+            }
+          }
+        : {}),
+    }),
+  }}
+/>
       </div>
     </div>
   );

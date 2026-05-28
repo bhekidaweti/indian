@@ -72,7 +72,9 @@ export default async function CityPage({ params }: CityPageProps) {
 
   // Calculate stats
   const totalRestaurants = restaurants.length;
-  const averageRating = restaurants.reduce((acc, r) => acc + (r.rating || 0), 0) / totalRestaurants;
+  const averageRating = totalRestaurants > 0
+  ? restaurants.reduce((acc, r) => acc + (r.rating || 0), 0) / totalRestaurants
+  : 0;
   const totalReviews = restaurants.reduce((acc, r) => acc + (r.review_count || 0), 0);
   
   // Get unique cuisines in this city
@@ -186,14 +188,7 @@ export default async function CityPage({ params }: CityPageProps) {
                   "@type": "PostalAddress",
                   "addressLocality": restaurant.city,
                   "addressRegion": restaurant.province
-                },
-                "aggregateRating": restaurant.rating ? {
-                  "@type": "AggregateRating",
-                  "ratingValue": restaurant.rating,
-                  "reviewCount": restaurant.review_count
-                } : undefined
-              }
-            }))
+                }              }            }))
           })
         }}
       />
